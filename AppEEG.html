@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema EEG 10-20 — Treino Interativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================
+   IDENTIDADE VISUAL — Dark / Tech & Movimento
+   Fundo:            #0b0f19 (Preto Profundo / Azul Noturno)
+   Azul Elétrico:    #38bdf8 (títulos, ganchos, tecnologia)
+   Roxo Conceitual:  #c084fc (molduras, blocos secundários)
+   Amarelo Ouro:     #FFD700 (conquistas, precisão, destaque premium)
+   Laranja/Amarelo:  #f59e0b (energia, ação, alerta pedagógico)
+   Fontes: Montserrat (títulos/destaques), Poppins (corpo)
+========================================= */
+
+:root {
+  --bg: #0b0f19;
+  --panel: #121729;
+  --panel-alt: #171d33;
+  --panel-soft: #0e1320;
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.16);
+  --text: #e7ecf5;
+  --text-dim: #93a0b8;
+  --text-faint: #5c6883;
+  --blue: #38bdf8;
+  --purple: #c084fc;
+  --gold: #FFD700;
+  --orange: #f59e0b;
+  --green: #34d399;
+  --red: #f87171;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, .logo, .tab, .el-badge, .sim-target .big, .q-big, .btn, .lvl-btn { font-family: 'Montserrat', sans-serif; }
+
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+/* HEADER */
+header {
+  background: linear-gradient(120deg, #0e1220 0%, #131a2e 60%, #171025 100%);
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, var(--blue), var(--purple), var(--gold)) 1;
+  color: var(--text);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.logo { background: var(--gold); color: #1a1400; border-radius: 4px; padding: 6px 12px; font-size: 16px; font-weight: 800; }
+header h1 { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text); }
+header p { font-size: 11px; color: var(--text-dim); font-family: 'Poppins', sans-serif; }
+.header-streak {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-strong);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.header-streak span.n { color: var(--gold); font-size: 14px; font-weight: 700; }
+
+/* TABS */
+.tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel-soft); padding: 0 16px; overflow-x: auto; }
+.tab { padding: 12px 16px; font-size: 13px; color: var(--text-dim); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: all 0.2s ease; font-weight: 500; display:flex; align-items:center; gap:6px; }
+.tab.on { color: var(--blue); border-bottom-color: var(--blue); font-weight: 700; }
+.tab:hover:not(.on) { color: var(--text); }
+
+.content { flex: 1; background: var(--bg); overflow: hidden; display: flex; flex-direction: column; }
+
+.tab-content { display: none; height: 100%; flex-direction: column; }
+.tab-content.active { display: flex; }
+
+#t-map { flex-direction: row; }
+.map-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 16px; overflow-y: auto; }
+.side { width: 300px; min-width: 300px; border-left: 1px solid var(--border); background: var(--panel-soft); padding: 20px; overflow-y: auto; }
+
+/* LEGENDA */
+.legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 16px; }
+.leg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); font-weight: 500; }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
+
+/* ESTADOS E BOTÕES */
+.empty-st { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; gap: 8px; }
+.empty-st p { font-size: 14px; font-weight: 600; color: var(--blue); }
+.empty-st span { font-size: 12px; color: var(--text-dim); max-width: 220px; }
+
+.btn { background: var(--blue); color: #071019; border: none; border-radius: 6px; padding: 10px 18px; cursor: pointer; font-size: 13px; font-weight: 700; transition: background 0.15s, transform 0.1s, box-shadow 0.15s; text-align: center; }
+.btn:hover { background: #5cc9fb; box-shadow: 0 0 16px rgba(56,189,248,0.35); }
+.btn:active { transform: scale(0.97); }
+.btn.ghost { background: transparent; color: var(--blue); border: 1.5px solid var(--blue); }
+.btn.ghost:hover { background: rgba(56,189,248,0.08); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.success { background: var(--green); color: #04241a; }
+.btn.success:hover { background: #5eeac1; box-shadow: 0 0 16px rgba(52,211,153,0.35); }
+
+/* CARD BASE */
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,0.35); }
+
+/* PROGRESSO / BARRAS */
+.prog { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple)); border-radius: 4px; transition: width 0.35s ease; }
+.prog-fill.acc { background: linear-gradient(90deg, var(--gold), var(--orange)); }
+
+/* TAGS E PILLS */
+.tag, .el-pill { background: rgba(56,189,248,0.12); color: var(--blue); border: 1px solid rgba(56,189,248,0.35); font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 8px; letter-spacing: 0.04em; }
+
+/* DADOS ELETRODOS NO MAPA */
+.elec { cursor: pointer; transition: r 0.15s, stroke-width 0.15s, fill 0.2s, filter 0.15s; }
+.elec:hover { stroke: var(--gold); stroke-width: 3; filter: brightness(1.15); }
+.elec.active { r: 16; stroke: var(--gold); stroke-width: 4; }
+.elec.quiz-target { cursor: pointer; }
+.elec.quiz-correct { fill: var(--green) !important; stroke: var(--gold); stroke-width: 4; }
+.elec.quiz-wrong { fill: var(--red) !important; }
+.elec.quiz-reveal { stroke: var(--gold); stroke-width: 4; }
+.el-label { font-size: 11px; font-weight: 800; fill: #0b0f19; pointer-events: none; font-family: 'Montserrat', sans-serif; }
+
+/* SIDE PANEL INFO */
+#el-info h2 { font-size: 24px; color: var(--blue); margin-bottom: 5px; }
+#el-info .reg { color: var(--text-dim); font-size: 12px; margin-bottom: 15px; display: block; }
+#el-info h4 { font-size: 13px; color: var(--purple); margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+#el-info p { font-size: 13px; color: var(--text); line-height: 1.5; margin-bottom: 10px; }
+
+/* ===== TREINO (SIMULADOR + FLASHCARDS) ===== */
+#t-sim { overflow-y: auto; }
+.train-wrap { max-width: 960px; margin: 0 auto; padding: 24px 20px 60px; width: 100%; }
+.train-modes { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+.mode-btn { flex: 1; min-width: 200px; background: var(--panel); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s; }
+.mode-btn:hover { border-color: var(--blue); }
+.mode-btn.sel { border-color: var(--gold); background: rgba(255,215,0,0.06); }
+.mode-btn .mt { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--blue); font-size: 13px; margin-bottom: 4px; }
+.mode-btn .md { font-size: 11.5px; color: var(--text-dim); line-height: 1.4; }
+
+.level-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.lvl-btn { flex: 1; min-width: 150px; background: var(--panel-soft); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--blue); transition: all 0.15s; text-align: left; }
+.lvl-btn .lt { display:block; font-size: 13px; margin-bottom: 2px; }
+.lvl-btn .ln { display:block; font-size: 10.5px; color: var(--text-faint); font-weight: 500; text-transform: none; }
+.lvl-btn.sel { border-color: var(--purple); background: rgba(192,132,252,0.12); color: var(--purple); }
+.lvl-btn.sel .ln { color: #dcb9fc; }
+
+.quiz-stage { display: none; }
+.quiz-stage.active { display: block; }
+
+.quiz-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.quiz-header .qh-left { font-size: 12px; color: var(--text-dim); font-weight: 600; }
+.quiz-header .qh-score { font-size: 12px; color: var(--text); font-weight: 700; }
+.quiz-header .qh-score .sc-n { color: var(--green); }
+.quiz-header .qh-score .sc-x { color: var(--red); }
+
+.quiz-body { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+.quiz-map-col { flex: 1; min-width: 320px; display:flex; flex-direction:column; align-items:center; }
+.quiz-info-col { width: 280px; min-width: 260px; }
+
+.target-card { background: var(--panel-alt); border: 1px solid rgba(56,189,248,0.3); color: #fff; border-radius: 10px; padding: 18px 20px; text-align: center; margin-bottom: 14px; width: 100%; }
+.target-card .tc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 6px; }
+.target-card .tc-name { font-size: 34px; font-weight: 800; color: var(--gold); text-shadow: 0 0 18px rgba(255,215,0,0.35); }
+
+.feedback-box { border-radius: 8px; padding: 12px 14px; font-size: 12.5px; line-height: 1.5; margin-bottom: 12px; display: none; }
+.feedback-box.ok { display: block; background: rgba(52,211,153,0.1); border-left: 4px solid var(--green); color: #b7f5de; }
+.feedback-box.bad { display: block; background: rgba(248,113,113,0.1); border-left: 4px solid var(--red); color: #ffd2d2; }
+.feedback-box strong { display:block; font-family:'Montserrat',sans-serif; font-size: 13px; margin-bottom: 4px; }
+
+.quiz-actions { display: flex; gap: 10px; }
+
+.round-summary { text-align: center; padding: 30px 20px; }
+.round-summary .rs-big { font-size: 48px; font-weight: 800; color: var(--gold); font-family:'Montserrat',sans-serif; }
+.round-summary .rs-sub { font-size: 13px; color: var(--text-dim); margin: 6px 0 24px; }
+.round-summary .rs-msg { font-size: 14px; font-weight: 600; color: var(--blue); margin-bottom: 20px; }
+
+/* QUEBRA-CABEÇA DE POSICIONAMENTO */
+.puzzle-body { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+.puzzle-map-wrap { flex: 1; min-width: 280px; display: flex; justify-content: center; }
+.puzzle-tray { width: 240px; min-width: 220px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 4px; }
+.puzzle-chip { padding: 9px 14px; border-radius: 10px; background: var(--panel-alt); border: 2px solid var(--blue); color: var(--text); font-weight: 700; font-size: 13px; font-family: 'Montserrat', sans-serif; cursor: pointer; user-select: none; transition: opacity 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s; }
+.puzzle-chip:hover { border-color: var(--gold); }
+.puzzle-chip.placed { opacity: 0.25; border-color: var(--green); pointer-events: none; }
+.puzzle-chip.selected { border-color: var(--gold); background: rgba(255,215,0,0.12); box-shadow: 0 0 14px rgba(255,215,0,0.4); transform: scale(1.06); }
+.puzzle-chip.shake { animation: pzshake 0.35s; border-color: var(--red); }
+@keyframes pzshake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+.puzzle-slot { fill: transparent; stroke: var(--text-faint); stroke-width: 1.5; stroke-dasharray: 3 3; cursor: pointer; transition: stroke 0.15s, fill 0.15s, stroke-dasharray 0.15s, stroke-width 0.15s; }
+.puzzle-slot:hover { stroke: var(--gold); stroke-width: 2.5; }
+.puzzle-slot.wrong-flash { stroke: var(--red); stroke-width: 2.5; }
+.puzzle-slot.filled { fill: var(--green); fill-opacity: 0.22; stroke: var(--green); stroke-dasharray: none; cursor: default; }
+
+/* FLASHCARDS */
+.flash-wrap { display: flex; flex-direction: column; align-items: center; }
+.flash-progress-row { width: 100%; max-width: 420px; margin-bottom: 16px; }
+.flash-progress-row .fp-txt { font-size: 11px; color: var(--text-faint); margin-bottom: 4px; display:flex; justify-content:space-between; }
+.flashcard { width: 100%; max-width: 420px; height: 260px; perspective: 1200px; margin-bottom: 20px; cursor: pointer; }
+.flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.flashcard-front { background: linear-gradient(135deg, #131a2e, #1c1430); border: 1px solid rgba(192,132,252,0.35); color: #fff; }
+.flashcard-front .fc-name { font-size: 52px; font-weight: 800; color: var(--gold); font-family:'Montserrat',sans-serif; text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+.flashcard-front .fc-hint { font-size: 11px; color: var(--text-dim); margin-top: 14px; }
+.flashcard-back { background: var(--panel); border: 1.5px solid rgba(56,189,248,0.3); transform: rotateY(180deg); }
+.flashcard-back .fb-reg { font-size: 12px; color: #071019; background: var(--blue); padding: 3px 10px; border-radius: 10px; font-weight:700; margin-bottom:10px; }
+.flashcard-back .fb-desc { font-size: 13px; color: var(--text); line-height: 1.55; }
+.flash-actions { display: flex; gap: 10px; width: 100%; max-width: 420px; }
+.flash-actions .btn { flex: 1; }
+
+/* ===== PROGRESSO ===== */
+#t-prog { overflow-y: auto; }
+.prog-wrap { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; width: 100%; }
+.prog-summary { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-card { flex: 1; min-width: 140px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+.stat-card .sc-big { font-size: 26px; font-weight: 800; color: var(--gold); font-family:'Montserrat',sans-serif; }
+.stat-card .sc-lbl { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.mastery-row { display: grid; grid-template-columns: 60px 1fr 60px; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.mastery-row .mr-id { font-weight: 700; color: var(--blue); font-size: 13px; font-family:'Montserrat',sans-serif; }
+.mastery-row .mr-pct { font-size: 12px; color: var(--text-dim); text-align: right; }
+.mastery-row .mr-pct.none { color: var(--text-faint); }
+
+.reset-row { margin-top: 26px; text-align: center; }
+.reset-row .btn.danger { background: transparent; color: var(--red); border: 1.5px solid var(--red); }
+.reset-row .btn.danger:hover { background: rgba(248,113,113,0.08); }
+
+/* CARDS DE REFERÊNCIA */
+.ref-container { max-width: 800px; margin: 20px auto; padding: 20px; }
+.ref-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.ref-card h3 { font-size: 16px; color: var(--blue); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--purple); display:flex; align-items:center; gap:8px; }
+.ref-card h3 .step-n { background: var(--gold); color: #1a1400; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+.ref-card p { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 12px; }
+.ref-card ul, .ref-card ol { color: var(--text); }
+.ref-card .nota { background: var(--panel-soft); border-left: 4px solid var(--gold); padding: 12px; border-radius: 0 4px 4px 0; font-size: 12px; color: var(--text); font-weight: 500; }
+.ref-card .nota.purple { border-left-color: var(--purple); }
+.src-note { text-align: center; font-size: 11px; color: var(--text-faint); margin: 10px 0 30px; line-height: 1.6; }
+
+/* TABELAS */
+.tbl-container { max-width: 900px; margin: 20px auto; padding: 20px; background: var(--panel); border-radius: 8px; border: 1px solid var(--border); }
+.tbl-container h2 { color: var(--blue); }
+.tbl-search { width: 100%; padding: 10px 14px; background: var(--panel-soft); color: var(--text); border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: 'Poppins', sans-serif; margin-bottom: 16px; }
+.tbl-search::placeholder { color: var(--text-faint); }
+.tbl-search:focus { outline: none; border-color: var(--blue); }
+.ref-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ref-table th { background: var(--panel-alt); color: var(--blue); padding: 12px; text-align: left; font-family: 'Montserrat', sans-serif; font-weight: 700; }
+.ref-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text); }
+.ref-table tr:hover td { background: rgba(56,189,248,0.06); cursor: pointer; }
+.no-results { text-align:center; padding: 24px; color: var(--text-faint); font-size: 13px; }
+
+@media (max-width: 720px) {
+  #t-map { flex-direction: column; }
+  .side { width: 100%; min-width: 0; border-left: none; border-top: 1px solid var(--border); }
+  .quiz-body { flex-direction: column; align-items: stretch; }
+  .quiz-info-col { width: 100%; }
+  .puzzle-body { flex-direction: column; align-items: stretch; }
+  .puzzle-tray { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="logo">EEG</div>
+    <div>
+      <h1>Sistema Internacional 10-20 — Treino Interativo</h1>
+      <p>Manual do Técnico em EEG · Compreender → Abstrair → Sistematizar → Treinar</p>
+    </div>
+    <div class="header-streak" id="header-streak">
+      <span>🎯 Precisão geral:</span> <span class="n" id="hdr-acc">—</span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab on" onclick="switchTab('t-map', this)">Mapa</div>
+    <div class="tab" onclick="switchTab('t-sim', this)">Treino</div>
+    <div class="tab" onclick="switchTab('t-ref', this)">Referências</div>
+    <div class="tab" onclick="switchTab('t-tbl', this)">Tabela de Eletrodos</div>
+    <div class="tab" onclick="switchTab('t-prog', this)">Meu Progresso</div>
+  </div>
+
+  <div class="content">
+
+    <!-- MAP TAB -->
+    <div id="t-map" class="tab-content active">
+      <div class="map-wrap">
+        <div class="legend" id="map-legend"></div>
+        <svg id="svg-map" viewBox="0 0 540 575" style="width:100%;max-width:520px" role="img" aria-label="Vista superior do crânio com eletrodos do sistema 10-20"></svg>
+      </div>
+
+      <div class="side">
+        <div class="empty-st" id="empty-st">
+          <p>Selecione um eletrodo</p>
+          <span>Toque em qualquer ponto colorido para ver localização e funções</span>
+        </div>
+        <div id="el-info" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- TREINO TAB -->
+    <div id="t-sim" class="tab-content">
+      <div class="train-wrap">
+
+        <div class="train-modes">
+          <div class="mode-btn sel" id="mode-quiz-btn" onclick="setTrainMode('quiz')">
+            <div class="mt">🎯 Quiz de Localização</div>
+            <div class="md">Veja o nome do eletrodo e clique no ponto certo do mapa.</div>
+          </div>
+          <div class="mode-btn" id="mode-flash-btn" onclick="setTrainMode('flash')">
+            <div class="mt">🔄 Flashcards de Função</div>
+            <div class="md">Veja o eletrodo e tente lembrar sua região e função antes de virar.</div>
+          </div>
+          <div class="mode-btn" id="mode-puzzle-btn" onclick="setTrainMode('puzzle')">
+            <div class="mt">🧩 Quebra-cabeça de Posicionamento</div>
+            <div class="md">Toque no eletrodo e depois no ponto certo do crânio, como na colocação real.</div>
+          </div>
+        </div>
+
+        <!-- QUIZ MODE -->
+        <div id="quiz-mode" class="quiz-stage active">
+          <div class="level-row" id="level-row"></div>
+
+          <div id="quiz-setup" class="card" style="padding:20px; text-align:center; margin-bottom:16px;">
+            <p style="font-size:13px; color:var(--text-dim); margin-bottom:14px;">10 rodadas por sessão · clique diretamente nos pontos do mapa para responder</p>
+            <button class="btn" onclick="startQuiz()">Iniciar Quiz</button>
+          </div>
+
+          <div id="quiz-active" style="display:none;">
+            <div class="quiz-header">
+              <div class="qh-left" id="qh-progress">Pergunta 1 / 10</div>
+              <div class="prog" style="flex:1; max-width:240px;"><div class="prog-fill" id="quiz-prog-fill" style="width:0%;"></div></div>
+              <div class="qh-score">Acertos: <span class="sc-n" id="qh-hits">0</span> · Erros: <span class="sc-x" id="qh-miss">0</span></div>
+            </div>
+
+            <div class="quiz-body">
+              <div class="quiz-map-col">
+                <div class="target-card">
+                  <div class="tc-label">Encontre o eletrodo</div>
+                  <div class="tc-name" id="quiz-target-name">Fz</div>
+                </div>
+                <svg id="svg-quiz" viewBox="0 0 540 575" style="width:100%;max-width:420px"></svg>
+              </div>
+              <div class="quiz-info-col">
+                <div class="feedback-box" id="quiz-feedback"></div>
+                <div class="quiz-actions">
+                  <button class="btn" id="quiz-next-btn" style="display:none;" onclick="nextQuestion()">Próxima pergunta →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="quiz-summary" style="display:none;" class="card round-summary">
+            <div class="tc-label" style="color:var(--text-faint); font-size:11px; text-transform:uppercase; letter-spacing:0.08em;">Sessão concluída</div>
+            <div class="rs-big" id="rs-score">0/10</div>
+            <div class="rs-sub" id="rs-pct">0% de acerto</div>
+            <div class="rs-msg" id="rs-msg"></div>
+            <button class="btn" onclick="startQuiz()">Treinar novamente</button>
+            <button class="btn ghost" style="margin-left:8px;" onclick="backToSetup()">Trocar nível</button>
+          </div>
+        </div>
+
+        <!-- FLASHCARD MODE -->
+        <div id="flash-mode" class="quiz-stage">
+          <div class="flash-wrap">
+            <div class="flash-progress-row">
+              <div class="fp-txt"><span id="flash-count">Carta 1 / 21</span><span id="flash-hint">clique na carta para virar</span></div>
+              <div class="prog"><div class="prog-fill" id="flash-prog-fill" style="width:0%;"></div></div>
+            </div>
+            <div class="flashcard" id="flashcard" onclick="flipCard()">
+              <div class="flashcard-inner">
+                <div class="flashcard-face flashcard-front">
+                  <div class="fc-name" id="fc-name">Fz</div>
+                  <div class="fc-hint">Qual a região e função deste eletrodo?</div>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                  <div class="fb-reg" id="fb-reg">Frontal · Linha Média</div>
+                  <div class="fb-desc" id="fb-desc"></div>
+                </div>
+              </div>
+            </div>
+            <div class="flash-actions">
+              <button class="btn ghost" onclick="markFlash(false)">😕 Preciso revisar</button>
+              <button class="btn success" onclick="markFlash(true)">✅ Eu sabia</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PUZZLE MODE -->
+        <div id="puzzle-mode" class="quiz-stage">
+          <div class="level-row" id="puzzle-level-row"></div>
+
+          <div id="puzzle-setup" class="card" style="padding:20px; text-align:center; margin-bottom:16px;">
+            <p style="font-size:13px; color:var(--text-dim); margin-bottom:14px;">Toque em uma etiqueta na bandeja para selecioná-la, depois toque no ponto certo do crânio para encaixar. Igual à colocação real dos eletrodos.</p>
+            <button class="btn" onclick="startPuzzle()">Montar Quebra-cabeça</button>
+          </div>
+
+          <div id="puzzle-active" style="display:none;">
+            <div class="quiz-header">
+              <div class="qh-left" id="pz-progress">0 / 5 posicionados</div>
+              <div class="qh-score">Erros: <span class="sc-x" id="pz-miss">0</span></div>
+            </div>
+            <div class="puzzle-body">
+              <div class="puzzle-map-wrap">
+                <svg id="svg-puzzle" viewBox="0 0 540 575" style="width:100%;max-width:460px"></svg>
+              </div>
+              <div class="puzzle-tray" id="puzzle-tray"></div>
+            </div>
+          </div>
+
+          <div id="puzzle-summary" style="display:none;" class="card round-summary">
+            <div class="tc-label" style="color:var(--text-faint); font-size:11px; text-transform:uppercase; letter-spacing:0.08em;">Quebra-cabeça concluído</div>
+            <div class="rs-big" id="pz-rs-score">5 eletrodos</div>
+            <div class="rs-sub" id="pz-rs-pct">0 erros no total</div>
+            <div class="rs-msg" id="pz-rs-msg"></div>
+            <button class="btn" onclick="startPuzzle()">Montar novamente</button>
+            <button class="btn ghost" style="margin-left:8px;" onclick="backToPuzzleSetup()">Trocar nível</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- REFERÊNCIAS TAB -->
+    <div id="t-ref" class="tab-content" style="overflow-y: auto;">
+      <div class="ref-container">
+        <div class="ref-card">
+          <h3><span class="step-n">1</span>Compreender o Sistema 10-20</h3>
+          <p>O Sistema Internacional 10-20 é o método padronizado mundialmente para descrever a localização de eletrodos de EEG no couro cabeludo. O sistema baseia-se na relação entre a posição de um eletrodo e o córtex cerebral subjacente — ou seja, cada ponto do mapa corresponde a uma área funcional real do cérebro logo abaixo.</p>
+          <div class="nota">A nomenclatura "10-20" refere-se ao fato de que as distâncias entre eletrodos adjacentes correspondem a 10% ou 20% da distância total ântero-posterior (Násio–Ínio) ou látero-lateral (pré-auricular a pré-auricular) do crânio.</div>
+        </div>
+
+        <div class="ref-card">
+          <h3><span class="step-n">2</span>Abstrair as Letras e Números</h3>
+          <p>A nomenclatura segue uma lógica simples para facilitar a memorização rápida — decore o código, não cada posição isoladamente:</p>
+          <ul style="margin-left: 20px; font-size: 13px; line-height: 1.7;">
+            <li><strong>Fp:</strong> Frontopolar</li>
+            <li><strong>F:</strong> Frontal</li>
+            <li><strong>C:</strong> Central</li>
+            <li><strong>T:</strong> Temporal</li>
+            <li><strong>P:</strong> Parietal</li>
+            <li><strong>O:</strong> Occipital</li>
+            <li><strong>A:</strong> Auricular (referência)</li>
+          </ul>
+          <p style="margin-top: 10px;"><strong>Números ímpares (1, 3, 5, 7):</strong> Hemisfério Esquerdo.<br><strong>Números pares (2, 4, 6, 8):</strong> Hemisfério Direito.<br><strong>Z (zero):</strong> Linha Média (Sagital).</p>
+          <div class="nota">Truque de memorização: "ímpar é esquerdo" — as duas palavras têm sílabas fortes parecidas. E quanto maior o número, mais lateral (mais longe da linha média) o eletrodo está.</div>
+        </div>
+
+        <div class="ref-card">
+          <h3><span class="step-n">3</span>Sistematizar a Medição</h3>
+          <p>Para um posicionamento confiável, siga sempre a mesma sequência de medidas antes de colar qualquer eletrodo:</p>
+          <ol style="margin-left: 20px; font-size: 13px; line-height: 1.8;">
+            <li>Meça a distância <strong>Násio → Ínio</strong> (linha longitudinal, sobre o topo da cabeça).</li>
+            <li>Marque <strong>Fpz</strong> a 10% dessa distância a partir do Násio, e <strong>Oz</strong> a 10% a partir do Ínio.</li>
+            <li>Meça a distância entre os dois pontos <strong>pré-auriculares</strong> (linha transversal, passando por Cz).</li>
+            <li>Marque <strong>T3/T4</strong> a 10% dessa distância a partir de cada ponto pré-auricular.</li>
+            <li>A partir dessas referências, os eletrodos restantes são posicionados em intervalos de 20% ao longo dos círculos de medida.</li>
+          </ol>
+          <div class="nota">Use sempre a mesma ordem de medição em todo paciente — sistematizar o processo é o que garante reprodutibilidade entre exames diferentes.</div>
+        </div>
+
+        <div class="ref-card">
+          <h3><span class="step-n">4</span>Eletrodo de Referência × Eletrodo Terra</h3>
+          <p>São dois conceitos que iniciantes costumam confundir, mas cumprem papéis diferentes no exame:</p>
+          <p><strong style="color:var(--blue);">Eletrodo de referência</strong> — usado nas montagens <em>referenciais</em>, onde a atividade de cada eletrodo é comparada a um ponto comum (por exemplo A1/A2 ou Cz). Ele faz parte do registro e influencia diretamente o traçado: se estiver mal posicionado, pode até introduzir artefato de ECG (o "pico R") no exame — um truque prático de laboratório é trocar a posição do eletrodo de referência quando esse artefato aparece.</p>
+          <p><strong style="color:var(--purple);">Eletrodo terra (derivação-terra)</strong> — não faz parte da montagem nem é comparado a nada: é um único eletrodo fixado ao paciente e ligado ao fio-terra do próprio aparelho de EEG (diferente do terra da instalação elétrica do prédio). Sua função é puramente de segurança e qualidade de sinal — ele é essencial para reduzir a interferência de 60 Hz da rede elétrica no traçado.</p>
+          <div class="nota purple">Todos os eletrodos — incluindo o de referência e o terra — devem ser do mesmo material (prata, cloreto de prata ou ouro) para evitar diferenças de potencial espúrias entre eles. E a impedância de cada eletrodo deve ficar abaixo de 5 kΩ: acima disso, o artefato de 60 Hz costuma aparecer no traçado.</div>
+          <p style="margin-top:10px;">Por trás do eletrodo terra existe também uma exigência de infraestrutura: o laboratório precisa de um aterramento elétrico bem planejado (idealmente com múltiplas hastes de cobre e impedância baixa), supervisionado por um especialista — é isso que garante um exame limpo, sem "chuvisco" de rede elétrica no traçado.</p>
+        </div>
+
+        <div class="ref-card">
+          <h3><span class="step-n">5</span>Iterar e Verificar</h3>
+          <p>Depois de posicionar todos os eletrodos, verifique as impedâncias (idealmente abaixo de 5 kΩ e equilibradas entre canais). Se um canal estiver ruidoso, revise a fixação antes de iniciar o registro — pequenos ajustes agora evitam artefatos difíceis de interpretar depois.</p>
+          <p>Use a aba <strong>Treino</strong> para testar sua memória de posições (Quiz), de funções clínicas (Flashcards) e para praticar a colocação física dos eletrodos no <strong>Quebra-cabeça</strong>, e a aba <strong>Meu Progresso</strong> para ver em quais eletrodos você ainda erra mais.</p>
+        </div>
+
+        <div class="src-note">Conteúdo técnico baseado em: <em>EEG na Prática Clínica</em> (Montenegro, Cendes, Guerreiro &amp; Guerreiro — Thieme Revinter) e no Manual de Rotina de EEG do técnico. Texto reescrito e adaptado para fins didáticos.</div>
+      </div>
+    </div>
+
+    <!-- TABELA TAB -->
+    <div id="t-tbl" class="tab-content" style="overflow-y: auto;">
+      <div class="tbl-container">
+        <h2>Guia Rápido de Eletrodos</h2>
+        <p style="margin: 10px 0 16px; color: var(--text-dim);">Tabela de consulta para as localizações padrão. Clique em uma linha para ver no mapa.</p>
+        <input type="text" class="tbl-search" id="tbl-search" placeholder="Buscar por nome, região ou hemisfério..." oninput="filterTable()">
+        <table class="ref-table">
+          <thead>
+            <tr><th>Eletrodo</th><th>Região</th><th>Hemisfério</th><th>Estrutura Cortical Associada</th></tr>
+          </thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+        <div class="no-results" id="tbl-no-results" style="display:none;">Nenhum eletrodo encontrado para essa busca.</div>
+      </div>
+    </div>
+
+    <!-- PROGRESSO TAB -->
+    <div id="t-prog" class="tab-content">
+      <div class="prog-wrap">
+        <div class="prog-summary">
+          <div class="stat-card"><div class="sc-big" id="ps-total">0</div><div class="sc-lbl">Perguntas respondidas</div></div>
+          <div class="stat-card"><div class="sc-big" id="ps-acc">—</div><div class="sc-lbl">Precisão geral</div></div>
+          <div class="stat-card"><div class="sc-big" id="ps-mastered">0</div><div class="sc-lbl">Eletrodos dominados</div></div>
+          <div class="stat-card"><div class="sc-big" id="ps-flash">0</div><div class="sc-lbl">Flashcards revisados</div></div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <h4 style="color:var(--blue); font-size:13px; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:10px;">Desempenho por eletrodo (Quiz)</h4>
+          <div id="mastery-list"></div>
+        </div>
+
+        <div class="reset-row">
+          <button class="btn danger" onclick="resetProgress()">Zerar todo o progresso</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =========================================
+   DADOS DOS ELETRODOS
+   Cores mapeadas à identidade visual: azul elétrico, roxo conceitual,
+   amarelo ouro, laranja e vermelho de energia.
+========================================= */
+const REGION_COLORS = {
+  frontal: '#38bdf8',
+  temporal: '#c084fc',
+  central: '#FFD700',
+  parietal: '#f59e0b',
+  occipital: '#f87171',
+  referencia: '#cbd5e1'
+};
+
+const electrodes = [
+  { id: 'Fp1', x: 200, y: 110, color: REGION_COLORS.frontal, reg: 'Frontopolar', hem: 'Esquerdo', desc: 'Registra atividade da região anterior do lobo frontal esquerdo.' },
+  { id: 'Fp2', x: 340, y: 110, color: REGION_COLORS.frontal, reg: 'Frontopolar', hem: 'Direito', desc: 'Registra atividade da região anterior do lobo frontal direito.' },
+  { id: 'F7',  x: 130, y: 180, color: REGION_COLORS.frontal, reg: 'Frontal Inferior', hem: 'Esquerdo', desc: 'Frequentemente capta artefatos de movimento ocular e atividade do lobo frontal inferior esquerdo.' },
+  { id: 'F3',  x: 190, y: 190, color: REGION_COLORS.frontal, reg: 'Frontal', hem: 'Esquerdo', desc: 'Posicionado sobre o córtex motor suplementar / lobo frontal esquerdo.' },
+  { id: 'Fz',  x: 270, y: 190, color: REGION_COLORS.frontal, reg: 'Frontal', hem: 'Linha Média', desc: 'Centro da linha frontal. Fundamental para monitoramento de linha média.' },
+  { id: 'F4',  x: 350, y: 190, color: REGION_COLORS.frontal, reg: 'Frontal', hem: 'Direito', desc: 'Posicionado sobre o córtex motor suplementar / lobo frontal direito.' },
+  { id: 'F8',  x: 410, y: 180, color: REGION_COLORS.frontal, reg: 'Frontal Inferior', hem: 'Direito', desc: 'Capta artefatos oculares e atividade do lobo frontal inferior direito.' },
+
+  { id: 'T3',  x: 100, y: 288, color: REGION_COLORS.temporal, reg: 'Temporal Médio', hem: 'Esquerdo', desc: 'Sobre o lobo temporal médio esquerdo (frequentemente associado a áreas de audição e linguagem).' },
+  { id: 'C3',  x: 180, y: 288, color: REGION_COLORS.central, reg: 'Central', hem: 'Esquerdo', desc: 'Córtex sensório-motor primário esquerdo.' },
+  { id: 'Cz',  x: 270, y: 288, color: REGION_COLORS.central, reg: 'Central', hem: 'Linha Média', desc: 'Vértice do crânio. Referência clássica para potenciais evocados e sono.' },
+  { id: 'C4',  x: 360, y: 288, color: REGION_COLORS.central, reg: 'Central', hem: 'Direito', desc: 'Córtex sensório-motor primário direito.' },
+  { id: 'T4',  x: 440, y: 288, color: REGION_COLORS.temporal, reg: 'Temporal Médio', hem: 'Direito', desc: 'Sobre o lobo temporal médio direito.' },
+
+  { id: 'T5',  x: 130, y: 396, color: REGION_COLORS.temporal, reg: 'Temporal Posterior', hem: 'Esquerdo', desc: 'Lobo temporal posterior / junção parieto-occipital esquerda.' },
+  { id: 'P3',  x: 190, y: 386, color: REGION_COLORS.parietal, reg: 'Parietal', hem: 'Esquerdo', desc: 'Lobo parietal esquerdo (associação sensorial e espacial).' },
+  { id: 'Pz',  x: 270, y: 386, color: REGION_COLORS.parietal, reg: 'Parietal', hem: 'Linha Média', desc: 'Linha média parietal.' },
+  { id: 'P4',  x: 350, y: 386, color: REGION_COLORS.parietal, reg: 'Parietal', hem: 'Direito', desc: 'Lobo parietal direito (associação sensorial e espacial).' },
+  { id: 'T6',  x: 410, y: 396, color: REGION_COLORS.temporal, reg: 'Temporal Posterior', hem: 'Direito', desc: 'Lobo temporal posterior / junção parieto-occipital direita.' },
+
+  { id: 'O1',  x: 220, y: 466, color: REGION_COLORS.occipital, reg: 'Occipital', hem: 'Esquerdo', desc: 'Córtex visual primário esquerdo. Importante para ritmo alfa.' },
+  { id: 'O2',  x: 320, y: 466, color: REGION_COLORS.occipital, reg: 'Occipital', hem: 'Direito', desc: 'Córtex visual primário direito. Importante para ritmo alfa.' },
+
+  { id: 'A1',  x: 52,  y: 288, color: REGION_COLORS.referencia, reg: 'Auricular', hem: 'Esquerdo', desc: 'Eletrodo de referência no lóbulo da orelha ou mastóide esquerda. Usado nas montagens referenciais — não deve ser confundido com o eletrodo terra.' },
+  { id: 'A2',  x: 488, y: 288, color: REGION_COLORS.referencia, reg: 'Auricular', hem: 'Direito', desc: 'Eletrodo de referência no lóbulo da orelha ou mastóide direita. Usado nas montagens referenciais — não deve ser confundido com o eletrodo terra.' }
+];
+const elById = Object.fromEntries(electrodes.map(e => [e.id, e]));
+
+const LEGEND_ITEMS = [
+  { label: 'Frontal/Frontopolar', color: REGION_COLORS.frontal },
+  { label: 'Temporal', color: REGION_COLORS.temporal },
+  { label: 'Central', color: REGION_COLORS.central },
+  { label: 'Parietal', color: REGION_COLORS.parietal },
+  { label: 'Occipital', color: REGION_COLORS.occipital },
+  { label: 'Referência (A1/A2)', color: REGION_COLORS.referencia }
+];
+const legendEl = document.getElementById('map-legend');
+LEGEND_ITEMS.forEach(it => {
+  const div = document.createElement('div');
+  div.className = 'leg';
+  div.innerHTML = `<div class="leg-dot" style="background:${it.color}; color:${it.color}"></div>${it.label}`;
+  legendEl.appendChild(div);
+});
+
+const LEVELS = [
+  { key: 'l1', label: 'Nível 1', name: 'Linha Média', ids: ['Fz','Cz','Pz','Fp1','Fp2'] },
+  { key: 'l2', label: 'Nível 2', name: 'Regiões Principais', ids: ['Fz','Cz','Pz','Fp1','Fp2','F3','F4','C3','C4','P3','P4','O1','O2'] },
+  { key: 'l3', label: 'Nível 3', name: 'Mapa Completo', ids: electrodes.map(e => e.id) }
+];
+
+/* =========================================
+   PERSISTÊNCIA (progresso pessoal do aluno)
+========================================= */
+const PROGRESS_KEY = 'eeg-progress-v1';
+let progress = { quiz: {}, flashSeen: {}, quizTotal: 0, quizHits: 0 };
+let storageReady = false;
+
+async function loadProgress() {
+  try {
+    const res = await window.storage.get(PROGRESS_KEY, false);
+    if (res && res.value) progress = JSON.parse(res.value);
+  } catch (e) { /* nada salvo ainda */ }
+  storageReady = true;
+  renderProgressTab();
+  renderHeaderStreak();
+}
+
+async function saveProgress() {
+  try { await window.storage.set(PROGRESS_KEY, JSON.stringify(progress), false); } catch (e) { console.error('Falha ao salvar progresso', e); }
+}
+
+function recordQuizAnswer(id, correct) {
+  if (!progress.quiz[id]) progress.quiz[id] = { hits: 0, total: 0 };
+  progress.quiz[id].total++;
+  if (correct) progress.quiz[id].hits++;
+  progress.quizTotal++;
+  if (correct) progress.quizHits++;
+  saveProgress();
+  renderProgressTab();
+  renderHeaderStreak();
+}
+
+function recordFlash(id, knew) {
+  progress.flashSeen[id] = { knew, ts: Date.now() };
+  saveProgress();
+  renderProgressTab();
+}
+
+function resetProgress() {
+  if (!confirm('Isso vai apagar todo o seu progresso salvo. Deseja continuar?')) return;
+  progress = { quiz: {}, flashSeen: {}, quizTotal: 0, quizHits: 0 };
+  saveProgress();
+  renderProgressTab();
+  renderHeaderStreak();
+}
+
+function renderHeaderStreak() {
+  const el = document.getElementById('hdr-acc');
+  if (progress.quizTotal === 0) { el.textContent = '—'; return; }
+  el.textContent = Math.round((progress.quizHits / progress.quizTotal) * 100) + '%';
+}
+
+function renderProgressTab() {
+  document.getElementById('ps-total').textContent = progress.quizTotal;
+  document.getElementById('ps-acc').textContent = progress.quizTotal ? Math.round((progress.quizHits / progress.quizTotal) * 100) + '%' : '—';
+  const mastered = Object.values(progress.quiz).filter(v => v.total >= 3 && (v.hits / v.total) >= 0.8).length;
+  document.getElementById('ps-mastered').textContent = mastered;
+  document.getElementById('ps-flash').textContent = Object.keys(progress.flashSeen).length;
+
+  const list = document.getElementById('mastery-list');
+  list.innerHTML = '';
+  electrodes.forEach(e => {
+    const stat = progress.quiz[e.id];
+    const row = document.createElement('div');
+    row.className = 'mastery-row';
+    const pct = stat && stat.total ? Math.round((stat.hits / stat.total) * 100) : null;
+    row.innerHTML = `
+      <div class="mr-id">${e.id}</div>
+      <div class="prog"><div class="prog-fill acc" style="width:${pct ?? 0}%;"></div></div>
+      <div class="mr-pct ${pct === null ? 'none' : ''}">${pct === null ? 'sem dados' : pct + '%'}</div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+/* =========================================
+   TABS
+========================================= */
+function switchTab(tabId, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  if (tabId === 't-prog') renderProgressTab();
+}
+
+/* =========================================
+   RENDER DO MAPA (crânio SVG reutilizável)
+========================================= */
+const ns = 'http://www.w3.org/2000/svg';
+
+function buildSkullBase(svg) {
+  svg.innerHTML = '';
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'Vista superior do crânio com eletrodos do sistema 10-20');
+  const parts = [
+    ['ellipse', { cx:270, cy:288, rx:198, ry:223, fill:'#121729', stroke:'#38bdf8', 'stroke-width':1.5, 'stroke-opacity':0.5 }],
+    ['line', { x1:270, y1:62, x2:270, y2:514, stroke:'#c084fc', 'stroke-width':1, 'stroke-dasharray':'4,4', opacity:0.35 }],
+    ['line', { x1:72, y1:288, x2:468, y2:288, stroke:'#c084fc', 'stroke-width':1, 'stroke-dasharray':'4,4', opacity:0.35 }],
+    ['polygon', { points:'270,50 260,67 280,67', fill:'#FFD700' }],
+    ['text', { x:270, y:40, 'text-anchor':'middle', 'font-size':10, 'font-weight':600, fill:'#93a0b8', 'font-family':'Montserrat' }, 'Násio'],
+    ['polygon', { points:'270,524 260,507 280,507', fill:'#FFD700' }],
+    ['text', { x:270, y:542, 'text-anchor':'middle', 'font-size':10, 'font-weight':600, fill:'#93a0b8', 'font-family':'Montserrat' }, 'Ínio']
+  ];
+  parts.forEach(([tag, attrs, text]) => {
+    const node = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+    if (text) node.textContent = text;
+    svg.appendChild(node);
+  });
+  const g = document.createElementNS(ns, 'g');
+  g.setAttribute('id', svg.id + '-group');
+  svg.appendChild(g);
+  return g;
+}
+
+/* ----- Mapa explicativo (aba Mapa) ----- */
+const infoPanel = document.getElementById('el-info');
+const emptyState = document.getElementById('empty-st');
+const tblBody = document.getElementById('tbl-body');
+
+function renderExploreMap() {
+  const svg = document.getElementById('svg-map');
+  const g = buildSkullBase(svg);
+  electrodes.forEach(el => {
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', el.x); circle.setAttribute('cy', el.y); circle.setAttribute('r', '13');
+    circle.setAttribute('fill', el.color); circle.setAttribute('class', 'elec'); circle.setAttribute('id', 'svg-' + el.id);
+    const text = document.createElementNS(ns, 'text');
+    text.setAttribute('x', el.x); text.setAttribute('y', el.y + 4); text.setAttribute('text-anchor', 'middle'); text.setAttribute('class', 'el-label');
+    text.textContent = el.id;
+
+    circle.addEventListener('click', () => {
+      document.querySelectorAll('#svg-map .elec').forEach(c => c.classList.remove('active'));
+      circle.classList.add('active');
+      emptyState.style.display = 'none';
+      infoPanel.style.display = 'block';
+      infoPanel.innerHTML = `
+        <span class="tag">${el.id}</span>
+        <h2>${el.id}</h2>
+        <span class="reg">${el.reg} • Hemisfério ${el.hem}</span>
+        <h4>Função / Captação Clínica</h4>
+        <p>${el.desc}</p>
+      `;
+    });
+    g.appendChild(circle);
+    g.appendChild(text);
+  });
+}
+
+function focusElectrodeInMap(id) {
+  switchTab('t-map', document.querySelector('.tab'));
+  const c = document.getElementById('svg-' + id);
+  if (c) c.dispatchEvent(new Event('click'));
+}
+
+function renderTable(filter) {
+  tblBody.innerHTML = '';
+  const f = (filter || '').trim().toLowerCase();
+  let shown = 0;
+  electrodes.forEach(el => {
+    const haystack = `${el.id} ${el.reg} ${el.hem} ${el.desc}`.toLowerCase();
+    if (f && !haystack.includes(f)) return;
+    shown++;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${el.id}</strong></td><td>${el.reg}</td><td>${el.hem}</td><td>${el.desc}</td>`;
+    tr.addEventListener('click', () => focusElectrodeInMap(el.id));
+    tblBody.appendChild(tr);
+  });
+  document.getElementById('tbl-no-results').style.display = shown === 0 ? 'block' : 'none';
+}
+function filterTable() { renderTable(document.getElementById('tbl-search').value); }
+
+/* =========================================
+   TREINO: alternância de modo
+========================================= */
+function setTrainMode(mode) {
+  document.getElementById('mode-quiz-btn').classList.toggle('sel', mode === 'quiz');
+  document.getElementById('mode-flash-btn').classList.toggle('sel', mode === 'flash');
+  document.getElementById('mode-puzzle-btn').classList.toggle('sel', mode === 'puzzle');
+  document.getElementById('quiz-mode').classList.toggle('active', mode === 'quiz');
+  document.getElementById('flash-mode').classList.toggle('active', mode === 'flash');
+  document.getElementById('puzzle-mode').classList.toggle('active', mode === 'puzzle');
+  if (mode === 'flash' && !flashState.started) initFlash();
+}
+
+/* =========================================
+   QUIZ DE LOCALIZAÇÃO
+========================================= */
+let selectedLevel = LEVELS[0];
+const levelRow = document.getElementById('level-row');
+LEVELS.forEach((lvl, i) => {
+  const btn = document.createElement('div');
+  btn.className = 'lvl-btn' + (i === 0 ? ' sel' : '');
+  btn.id = 'lvlbtn-' + lvl.key;
+  btn.innerHTML = `<span class="lt">${lvl.label}</span><span class="ln">${lvl.name} · ${lvl.ids.length} eletrodos</span>`;
+  btn.onclick = () => selectLevel(lvl);
+  levelRow.appendChild(btn);
+});
+function selectLevel(lvl) {
+  selectedLevel = lvl;
+  LEVELS.forEach(l => document.getElementById('lvlbtn-' + l.key).classList.toggle('sel', l.key === lvl.key));
+}
+
+let quizState = null;
+function startQuiz() {
+  const pool = shuffle([...selectedLevel.ids]);
+  const questions = [];
+  for (let i = 0; i < 10; i++) questions.push(pool[i % pool.length]);
+  quizState = { questions: shuffle(questions), index: 0, hits: 0, miss: 0, answered: false };
+  document.getElementById('quiz-setup').style.display = 'none';
+  document.getElementById('quiz-summary').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'block';
+  renderQuizQuestion();
+}
+function backToSetup() {
+  document.getElementById('quiz-summary').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'none';
+  document.getElementById('quiz-setup').style.display = 'block';
+}
+function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function renderQuizQuestion() {
+  const q = quizState.questions[quizState.index];
+  document.getElementById('quiz-target-name').textContent = q;
+  document.getElementById('qh-progress').textContent = `Pergunta ${quizState.index + 1} / ${quizState.questions.length}`;
+  document.getElementById('quiz-prog-fill').style.width = (quizState.index / quizState.questions.length * 100) + '%';
+  document.getElementById('qh-hits').textContent = quizState.hits;
+  document.getElementById('qh-miss').textContent = quizState.miss;
+  document.getElementById('quiz-feedback').className = 'feedback-box';
+  document.getElementById('quiz-feedback').innerHTML = '';
+  document.getElementById('quiz-next-btn').style.display = 'none';
+  quizState.answered = false;
+
+  const svg = document.getElementById('svg-quiz');
+  const g = buildSkullBase(svg);
+  selectedLevel.ids.forEach(id => {
+    const el = elById[id];
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', el.x); circle.setAttribute('cy', el.y); circle.setAttribute('r', '13');
+    circle.setAttribute('fill', el.color); circle.setAttribute('class', 'elec quiz-target'); circle.setAttribute('id', 'qz-' + el.id);
+    circle.addEventListener('click', () => answerQuiz(el.id));
+    g.appendChild(circle);
+  });
+}
+
+function answerQuiz(clickedId) {
+  if (quizState.answered) return;
+  quizState.answered = true;
+  const correctId = quizState.questions[quizState.index];
+  const correct = clickedId === correctId;
+  const clickedCircle = document.getElementById('qz-' + clickedId);
+  const correctCircle = document.getElementById('qz-' + correctId);
+
+  if (correct) {
+    quizState.hits++;
+    clickedCircle.classList.add('quiz-correct');
+    const fb = document.getElementById('quiz-feedback');
+    fb.className = 'feedback-box ok';
+    fb.innerHTML = `<strong>Correto — ${correctId}</strong>${elById[correctId].reg} · Hemisfério ${elById[correctId].hem}. ${elById[correctId].desc}`;
+  } else {
+    quizState.miss++;
+    clickedCircle.classList.add('quiz-wrong');
+    correctCircle.classList.add('quiz-reveal');
+    const fb = document.getElementById('quiz-feedback');
+    fb.className = 'feedback-box bad';
+    fb.innerHTML = `<strong>Não foi dessa vez — o correto era ${correctId}</strong>${elById[correctId].reg} · Hemisfério ${elById[correctId].hem}. ${elById[correctId].desc}`;
+  }
+  recordQuizAnswer(correctId, correct);
+  document.getElementById('qh-hits').textContent = quizState.hits;
+  document.getElementById('qh-miss').textContent = quizState.miss;
+  document.getElementById('quiz-next-btn').style.display = 'inline-block';
+  document.getElementById('quiz-next-btn').textContent = quizState.index + 1 >= quizState.questions.length ? 'Ver resultado →' : 'Próxima pergunta →';
+}
+
+function nextQuestion() {
+  quizState.index++;
+  if (quizState.index >= quizState.questions.length) {
+    finishQuiz();
+    return;
+  }
+  renderQuizQuestion();
+}
+
+function finishQuiz() {
+  document.getElementById('quiz-active').style.display = 'none';
+  document.getElementById('quiz-summary').style.display = 'block';
+  const total = quizState.questions.length;
+  const pct = Math.round((quizState.hits / total) * 100);
+  document.getElementById('rs-score').textContent = `${quizState.hits}/${total}`;
+  document.getElementById('rs-pct').textContent = `${pct}% de acerto em ${selectedLevel.name}`;
+  let msg = '';
+  if (pct >= 90) msg = 'Excelente! Você domina esse nível — que tal avançar para o próximo?';
+  else if (pct >= 70) msg = 'Bom desempenho. Revise os eletrodos que errou antes de subir de nível.';
+  else msg = 'Continue praticando — volte à aba Mapa para revisar as posições que confundiram você.';
+  document.getElementById('rs-msg').textContent = msg;
+}
+
+/* =========================================
+   QUEBRA-CABEÇA DE POSICIONAMENTO (arrastar e soltar)
+========================================= */
+let selectedPuzzleLevel = LEVELS[0];
+const puzzleLevelRow = document.getElementById('puzzle-level-row');
+LEVELS.forEach((lvl, i) => {
+  const btn = document.createElement('div');
+  btn.className = 'lvl-btn' + (i === 0 ? ' sel' : '');
+  btn.id = 'pzlvlbtn-' + lvl.key;
+  btn.innerHTML = `<span class="lt">${lvl.label}</span><span class="ln">${lvl.name} · ${lvl.ids.length} eletrodos</span>`;
+  btn.onclick = () => selectPuzzleLevel(lvl);
+  puzzleLevelRow.appendChild(btn);
+});
+function selectPuzzleLevel(lvl) {
+  selectedPuzzleLevel = lvl;
+  LEVELS.forEach(l => document.getElementById('pzlvlbtn-' + l.key).classList.toggle('sel', l.key === lvl.key));
+}
+
+let puzzleState = null;
+let puzzleSelected = null;
+function startPuzzle() {
+  puzzleState = { ids: shuffle([...selectedPuzzleLevel.ids]), placed: new Set(), misses: 0, total: selectedPuzzleLevel.ids.length };
+  puzzleSelected = null;
+  document.getElementById('puzzle-setup').style.display = 'none';
+  document.getElementById('puzzle-summary').style.display = 'none';
+  document.getElementById('puzzle-active').style.display = 'block';
+  renderPuzzle();
+}
+function backToPuzzleSetup() {
+  document.getElementById('puzzle-summary').style.display = 'none';
+  document.getElementById('puzzle-active').style.display = 'none';
+  document.getElementById('puzzle-setup').style.display = 'block';
+}
+
+function renderPuzzle() {
+  document.getElementById('pz-progress').textContent = `${puzzleState.placed.size} / ${puzzleState.total} posicionados`;
+  document.getElementById('pz-miss').textContent = puzzleState.misses;
+
+  const svg = document.getElementById('svg-puzzle');
+  const g = buildSkullBase(svg);
+  selectedPuzzleLevel.ids.forEach(id => {
+    const el = elById[id];
+    const isPlaced = puzzleState.placed.has(id);
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', el.x); circle.setAttribute('cy', el.y); circle.setAttribute('r', '16');
+    circle.setAttribute('class', 'puzzle-slot' + (isPlaced ? ' filled' : ''));
+    circle.setAttribute('id', 'pzslot-' + id);
+    if (!isPlaced) circle.addEventListener('click', () => attemptPlace(id));
+    g.appendChild(circle);
+    if (isPlaced) {
+      const text = document.createElementNS(ns, 'text');
+      text.setAttribute('x', el.x); text.setAttribute('y', el.y + 4); text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('class', 'el-label'); text.setAttribute('fill', '#04241a');
+      text.textContent = id;
+      g.appendChild(text);
+    }
+  });
+
+  const tray = document.getElementById('puzzle-tray');
+  tray.innerHTML = '';
+  puzzleState.ids.forEach(id => {
+    const placed = puzzleState.placed.has(id);
+    const chip = document.createElement('div');
+    chip.className = 'puzzle-chip' + (placed ? ' placed' : '') + (id === puzzleSelected ? ' selected' : '');
+    chip.textContent = id;
+    if (!placed) chip.addEventListener('click', () => selectChip(id));
+    tray.appendChild(chip);
+  });
+
+  if (puzzleState.placed.size === puzzleState.total) finishPuzzle();
+}
+
+function selectChip(id) {
+  puzzleSelected = (puzzleSelected === id) ? null : id;
+  document.querySelectorAll('#puzzle-tray .puzzle-chip').forEach(c => {
+    c.classList.toggle('selected', c.textContent === puzzleSelected);
+  });
+}
+
+function attemptPlace(slotId) {
+  if (!puzzleSelected) return;
+  const chipId = puzzleSelected;
+  const slotEl = document.getElementById('pzslot-' + slotId);
+  if (chipId === slotId) {
+    puzzleState.placed.add(chipId);
+    recordQuizAnswer(chipId, true);
+    puzzleSelected = null;
+  } else {
+    puzzleState.misses++;
+    recordQuizAnswer(chipId, false);
+    slotEl.classList.add('wrong-flash');
+    setTimeout(() => slotEl.classList.remove('wrong-flash'), 350);
+  }
+  renderPuzzle();
+}
+
+function finishPuzzle() {
+  document.getElementById('puzzle-active').style.display = 'none';
+  document.getElementById('puzzle-summary').style.display = 'block';
+  document.getElementById('pz-rs-score').textContent = `${puzzleState.total} eletrodos`;
+  document.getElementById('pz-rs-pct').textContent = `${puzzleState.misses} erro(s) no total`;
+  let msg = '';
+  if (puzzleState.misses === 0) msg = 'Perfeito! Você posicionou tudo de primeira — avance de nível.';
+  else if (puzzleState.misses <= puzzleState.total) msg = 'Bom trabalho. Revise as posições em que errou na aba Mapa.';
+  else msg = 'Continue praticando — a repetição fixa a posição de cada eletrodo na memória.';
+  document.getElementById('pz-rs-msg').textContent = msg;
+}
+
+/* =========================================
+   FLASHCARDS
+========================================= */
+let flashState = { started: false, order: [], index: 0, flipped: false };
+function initFlash() {
+  flashState = { started: true, order: shuffle(electrodes.map(e => e.id)), index: 0, flipped: false };
+  renderFlashcard();
+}
+function renderFlashcard() {
+  const id = flashState.order[flashState.index];
+  const el = elById[id];
+  document.getElementById('fc-name').textContent = el.id;
+  document.getElementById('fb-reg').textContent = `${el.reg} · Hemisfério ${el.hem}`;
+  document.getElementById('fb-desc').textContent = el.desc;
+  document.getElementById('flash-count').textContent = `Carta ${flashState.index + 1} / ${flashState.order.length}`;
+  document.getElementById('flash-prog-fill').style.width = (flashState.index / flashState.order.length * 100) + '%';
+  document.getElementById('flashcard').classList.remove('flipped');
+  flashState.flipped = false;
+}
+function flipCard() {
+  flashState.flipped = !flashState.flipped;
+  document.getElementById('flashcard').classList.toggle('flipped', flashState.flipped);
+}
+function markFlash(knew) {
+  const id = flashState.order[flashState.index];
+  recordFlash(id, knew);
+  flashState.index++;
+  if (flashState.index >= flashState.order.length) {
+    flashState.order = shuffle(electrodes.map(e => e.id));
+    flashState.index = 0;
+  }
+  renderFlashcard();
+}
+
+/* =========================================
+   INICIALIZAÇÃO
+========================================= */
+renderExploreMap();
+renderTable('');
+loadProgress();
+</script>
+</body>
+</html>
