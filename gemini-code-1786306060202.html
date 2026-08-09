@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso Restrito</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid #334155;
+    }
+    .input-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.25rem; }
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 4px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #fff;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: #1d4ed8; }
+    .error { color: #ef4444; font-size: 0.875rem; margin-top: 0.5rem; display: none; }
+    #protectedSection { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Tela de Form/Login -->
+  <div class="card" id="loginCard">
+    <h2>Identificação de Acesso</h2>
+    <form id="accessForm">
+      <div class="input-group">
+        <label for="name">Nome completo</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="input-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="input-group">
+        <label for="phone">Telefone</label>
+        <input type="tel" id="phone" required placeholder="(00) 00000-0000">
+      </div>
+      <button type="submit" id="submitBtn">Entrar</button>
+    </form>
+    <div id="errorMsg" class="error"></div>
+  </div>
+
+  <!-- Contêiner do Conteúdo Seguro (Vazio inicialmente no HTML) -->
+  <div class="card" id="protectedSection">
+    <h2 id="contentTitle"></h2>
+    <p id="contentBody"></p>
+  </div>
+
+  <script>
+    document.getElementById('accessForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorMsg = document.getElementById('errorMsg');
+      errorMsg.style.display = 'none';
+
+      const payload = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value
+      };
+
+      try {
+        // 1. Envia as credenciais e recebe o Cookie HttpOnly do servidor
+        const authRes = await fetch('/api/access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const authData = await authRes.json();
+        if (!authRes.ok) throw new Error(authData.message);
+
+        // 2. Com a sessão estabelecida, solicita o conteúdo restrito
+        const dataRes = await fetch('/api/protected-data');
+        const data = await dataRes.json();
+
+        if (!dataRes.ok) throw new Error(data.message);
+
+        // 3. Renderiza no DOM apenas o que foi retornado do servidor
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('protectedSection').style.display = 'block';
+        document.getElementById('contentTitle').innerText = data.data.title;
+        document.getElementById('contentBody').innerText = data.data.content;
+
+      } catch (err) {
+        errorMsg.innerText = err.message;
+        errorMsg.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
