@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treino de EEG — Acesso à Demonstração</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon-32.png" type="image/png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<style>
+  :root {
+    --bg: #0b0f19;
+    --panel: #121729;
+    --panel-alt: #171d33;
+    --blue: #38bdf8;
+    --purple: #c084fc;
+    --gold: #FFD700;
+    --text: #f8fafc;
+    --text-dim: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top, #131a2e 0%, var(--bg) 60%);
+    font-family: 'Lato', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    padding: 20px;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--panel);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin-bottom: 16px;
+  }
+  h1 { font-family: 'Playfair Display', serif; font-size: 24px; margin: 0 0 8px; line-height: 1.3; }
+  .sub { color: var(--text-dim); font-size: 14px; margin-bottom: 26px; line-height: 1.5; }
+  .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 20px; }
+  .step-num {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    color: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .step-text { font-size: 13px; color: var(--text-dim); padding-top: 4px; }
+  .btn {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 14px;
+    transition: opacity 0.2s, background 0.2s, color 0.2s;
+  }
+  .btn-wa {
+    background: var(--panel-alt);
+    color: var(--gold);
+    border: 1.5px solid var(--gold);
+  }
+  .btn-wa:hover { background: var(--gold); color: #04101f; }
+  .btn-demo {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: #04101f;
+  }
+  .btn-demo:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="badge">Demonstração gratuita</div>
+    <h1>Veja como funciona o treino de EEG</h1>
+    <p class="sub">São só dois passos rápidos:</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">Entre no grupo do WhatsApp para acompanhar as novidades.</div>
+    </div>
+    <a href="https://chat.whatsapp.com/IVA25m8C1HnIPV6a97mmWC?s=cl&p=a&ilr=1" target="_blank" class="btn btn-wa">Entrar no grupo do WhatsApp</a>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Acesse a demonstração interativa do app.</div>
+    </div>
+    <a href="app-treino-eeg.html" class="btn btn-demo">Acessar a demonstração</a>
+  </div>
+
+</body>
+</html>
