@@ -181,111 +181,133 @@
   </div>
 
   <!-- LÓGICA DE INTEGRAÇÃO COM O SERVIDOR EXPRESS -->
+  <!-- LÓGICA DE INTEGRAÇÃO ROBUSTA COM O SERVIDOR EXPRESS -->
   <script>
-    const accessForm = document.getElementById('access-form');
-    const messageArea = document.getElementById('message-area');
-    const eegContainer = document.getElementById('eeg-app-container');
-    const btnSubmit = document.getElementById('btn-submit');
+    document.addEventListener('DOMContentLoaded', () => {
+      const accessForm = document.getElementById('access-form');
+      const messageArea = document.getElementById('message-area');
+      const eegContainer = document.getElementById('eeg-app-container');
+      const btnSubmit = document.getElementById('btn-submit');
 
-    accessForm.addEventListener('submit', async (event) => {
-      event.preventDefault(); // Impede o recarregamento da página
+      if (!accessForm) return;
 
-      messageArea.className = 'message';
-      messageArea.textContent = 'Validando acesso no servidor...';
-      btnSubmit.disabled = true;
+      accessForm.addEventListener('submit', async (event) => {
+        // FREIA o recarregamento padrão da página do HTML
+        event.preventDefault();
 
-      // 1. Coleta os dados digitados
-      const payload = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value
-      };
+        messageArea.className = 'message';
+        messageArea.textContent = 'Validando acesso no servidor...';
+        btnSubmit.disabled = true;
 
-      try {
-  const response = await fetch('/api/access', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+        const payload = {
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value
+        };
 
-  // Verifica se o servidor retornou JSON de fato
-  const contentType = response.headers.get('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
-    throw new Error('Servidor indisponível ou rota /api/access não encontrada.');
-  }
+        try {
+          // 1. Envia requisição para a rota /api/access
+          const response = await fetch('/api/access', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
 
-  const data = await response.json();
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Servidor não respondeu em formato JSON. Verifique se o node server.js está rodando.');
+          }
 
-  if (!response.ok) {
-    throw new Error(data.message || 'Erro ao tentar acessar.');
-  }
+          const data = await response.json();
 
-  // Sucesso!
-  messageArea.className = 'message success';
-  messageArea.textContent = data.message;
-  accessForm.style.display = 'none';
-  fetchProtectedData();
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Dados de acesso inválidos.');
+          }
 
-} catch (err) {
-  messageArea.className = 'message error';
-  messageArea.textContent = err.message;
-  btnSubmit.disabled = false;
-}
+          // 2. Tenta buscar o conteúdo protegido ANTES de sumir com o formulário
+          messageArea.className = 'message success';
+          messageArea.textContent = 'Acesso autorizado! Carregando treino...';
 
-    // Função para buscar o conteúdo protegido usando o Cookie recebido
-    async function fetchProtectedData() {
-      try {
-        const response = await fetch('/api/protected-data');
-        const result = await response.json();
+          const loaded = await fetchProtectedData();
 
-        if (result.success) {
-          // Revela o aplicativo EEG na tela
+          if (loaded) {
+            // Só esconde o formulário se o app realmente carregou na tela
+            accessForm.style.display = 'none';
+          } else {
+            btnSubmit.disabled = false;
+          }
+
+        } catch (err) {
+          messageArea.className = 'message error';
+          messageArea.textContent = err.message;
+          btnSubmit.disabled = false;
+        }
+      });
+
+      // Função para validar o Cookie e buscar os dados restritos
+      async function fetchProtectedData() {
+        try {
+          const response = await fetch('/api/protected-data');
+          
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Falha ao conectar com a rota protegida.');
+          }
+
+          const result = await response.json();
+
+          if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Sessão negada pelo servidor.');
+          }
+
+          // Exibe a área do EEG
           eegContainer.style.display = 'block';
           document.getElementById('protected-title').textContent = result.data.title;
           document.getElementById('protected-content').textContent = result.data.content;
 
-          // Inicia a renderização do gráfico de EEG
+          // Inicia o gráfico animado
           startEEGAnimation();
+          return true;
+
+        } catch (err) {
+          messageArea.className = 'message error';
+          messageArea.textContent = 'Erro ao liberar aplicativo: ' + err.message;
+          return false;
         }
-      } catch (err) {
-        messageArea.className = 'message error';
-        messageArea.textContent = 'Erro ao carregar o aplicativo seguro.';
-      }
-    }
-
-    // Desenha uma onda de EEG animada via Canvas HTML5
-    function startEEGAnimation() {
-      const canvas = document.getElementById('eegCanvas');
-      const ctx = canvas.getContext('2d');
-      let x = 0;
-      
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-
-      ctx.strokeStyle = '#FFD700';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(0, canvas.height / 2);
-
-      function render() {
-        if (x >= canvas.width) {
-          x = 0;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.beginPath();
-          ctx.moveTo(0, canvas.height / 2);
-        }
-
-        // Gera uma oscilação simulando onda cerebral
-        const y = (canvas.height / 2) + (Math.sin(x * 0.1) * 15) + ((Math.random() - 0.5) * 20);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-
-        x += 2;
-        requestAnimationFrame(render);
       }
 
-      render();
-    }
+      // Desenha o Sinal de EEG em tempo real no Canvas
+      function startEEGAnimation() {
+        const canvas = document.getElementById('eegCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let x = 0;
+        
+        canvas.width = canvas.offsetWidth || 400;
+        canvas.height = canvas.offsetHeight || 120;
+
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+
+        function render() {
+          if (x >= canvas.width) {
+            x = 0;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+          }
+
+          const y = (canvas.height / 2) + (Math.sin(x * 0.1) * 15) + ((Math.random() - 0.5) * 20);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+
+          x += 2;
+          requestAnimationFrame(render);
+        }
+
+        render();
+      }
+    });
   </script>
-</body>
-</html>
