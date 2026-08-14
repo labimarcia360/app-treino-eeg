@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCLuz EEG — Treino Interativo Demo</title>
+  
+  <!-- Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #121729;
+      --gold: #FFD700;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --error: #ef4444;
+      --success: #22c55e;
+    }
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #131a2e 0%, var(--bg) 60%);
+      font-family: 'Lato', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      padding: 20px;
+    }
+    
+    .card { 
+      width: 100%; 
+      max-width: 480px; 
+      background: var(--panel); 
+      border: 1px solid rgba(56,189,248,0.2); 
+      border-radius: 16px; 
+      padding: 28px 24px; 
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
+    }
+    
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      border-radius: 999px;
+      padding: 4px 12px;
+      margin-bottom: 16px;
+    }
+    
+    h1 { font-family: 'Playfair Display', serif; font-size: 24px; margin: 0 0 8px; line-height: 1.3; }
+    .sub { color: var(--text-dim); font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+
+    /* Estilização dos Formulários */
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      background: #070a12;
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--gold);
+    }
+    
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: var(--gold);
+      color: #0b0f19;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      margin-top: 10px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    /* Mensagens de Feedback */
+    .message {
+      font-size: 13px;
+      margin-top: 14px;
+      min-height: 18px;
+      text-align: center;
+    }
+    .message.error { color: var(--error); }
+    .message.success { color: var(--success); }
+
+    /* Área do Aplicativo Protegido (Inicia Oculta) */
+    #eeg-app-container {
+      display: none;
+      margin-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 20px;
+    }
+    .protected-box {
+      background: rgba(255,215,0,0.05);
+      border: 1px dashed var(--gold);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    canvas {
+      width: 100%;
+      height: 120px;
+      background: #070a12;
+      border-radius: 8px;
+      border: 1px solid rgba(56,189,248,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="badge">Demonstração gratuita</div>
+    <h1>MCLuz EEG🧠 - Treino Interativo.</h1>
+    <p class="sub">Obrigada pela confiança🤓. Preencha seus dados para liberar o treino.</p>
+
+    <!-- FORMULÁRIO DE ACESSO -->
+    <form id="access-form">
+      <div class="form-group">
+        <label for="name">Nome Completo</label>
+        <input type="text" id="name" class="form-control" placeholder="Seu nome" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" class="form-control" placeholder="seuemail@dominio.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Telefone / WhatsApp</label>
+        <input type="tel" id="phone" class="form-control" placeholder="(00) 00000-0000" required>
+      </div>
+
+      <button type="submit" id="btn-submit" class="btn-primary">Acessar Treino EEG</button>
+    </form>
+
+    <!-- MENSAGEM DE STATUS DO SERVIDOR -->
+    <div id="message-area" class="message"></div>
+
+    <!-- ÁREA DO APLICATIVO EEG (LIBERADA APÓS AUTENTICAÇÃO) -->
+    <div id="eeg-app-container">
+      <div class="protected-box">
+        <strong id="protected-title">Carregando dados...</strong>
+        <p id="protected-content" style="margin: 6px 0 0; color: var(--text-dim);"></p>
+      </div>
+      
+      <!-- Simulação Visual de Onda de EEG -->
+      <label style="font-size: 11px; text-transform: uppercase; color: var(--gold);">Sinal EEG em Tempo Real</label>
+      <canvas id="eegCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- LÓGICA DE INTEGRAÇÃO COM O SERVIDOR EXPRESS -->
+  <script>
+    const accessForm = document.getElementById('access-form');
+    const messageArea = document.getElementById('message-area');
+    const eegContainer = document.getElementById('eeg-app-container');
+    const btnSubmit = document.getElementById('btn-submit');
+
+    accessForm.addEventListener('submit', async (event) => {
+      event.preventDefault(); // Impede o recarregamento da página
+
+      messageArea.className = 'message';
+      messageArea.textContent = 'Validando acesso no servidor...';
+      btnSubmit.disabled = true;
+
+      // 1. Coleta os dados digitados
+      const payload = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value
+      };
+
+      try {
+        // 2. Envia requisição POST para a rota /api/access do servidor Express
+        const response = await fetch('/api/access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Erro ao tentar acessar.');
+        }
+
+        // Sucesso na Autenticação
+        messageArea.className = 'message success';
+        messageArea.textContent = data.message;
+        
+        // Esconde o formulário
+        accessForm.style.display = 'none';
+
+        // 3. Busca os dados da rota protegida (/api/protected-data)
+        fetchProtectedData();
+
+      } catch (err) {
+        messageArea.className = 'message error';
+        messageArea.textContent = err.message;
+        btnSubmit.disabled = false;
+      }
+    });
+
+    // Função para buscar o conteúdo protegido usando o Cookie recebido
+    async function fetchProtectedData() {
+      try {
+        const response = await fetch('/api/protected-data');
+        const result = await response.json();
+
+        if (result.success) {
+          // Revela o aplicativo EEG na tela
+          eegContainer.style.display = 'block';
+          document.getElementById('protected-title').textContent = result.data.title;
+          document.getElementById('protected-content').textContent = result.data.content;
+
+          // Inicia a renderização do gráfico de EEG
+          startEEGAnimation();
+        }
+      } catch (err) {
+        messageArea.className = 'message error';
+        messageArea.textContent = 'Erro ao carregar o aplicativo seguro.';
+      }
+    }
+
+    // Desenha uma onda de EEG animada via Canvas HTML5
+    function startEEGAnimation() {
+      const canvas = document.getElementById('eegCanvas');
+      const ctx = canvas.getContext('2d');
+      let x = 0;
+      
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height / 2);
+
+      function render() {
+        if (x >= canvas.width) {
+          x = 0;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.beginPath();
+          ctx.moveTo(0, canvas.height / 2);
+        }
+
+        // Gera uma oscilação simulando onda cerebral
+        const y = (canvas.height / 2) + (Math.sin(x * 0.1) * 15) + ((Math.random() - 0.5) * 20);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        x += 2;
+        requestAnimationFrame(render);
+      }
+
+      render();
+    }
+  </script>
+</body>
+</html>
