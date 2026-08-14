@@ -202,35 +202,35 @@
       };
 
       try {
-        // 2. Envia requisição POST para a rota /api/access do servidor Express
-        const response = await fetch('/api/access', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+  const response = await fetch('/api/access', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 
-        const data = await response.json();
+  // Verifica se o servidor retornou JSON de fato
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    throw new Error('Servidor indisponível ou rota /api/access não encontrada.');
+  }
 
-        if (!response.ok) {
-          throw new Error(data.message || 'Erro ao tentar acessar.');
-        }
+  const data = await response.json();
 
-        // Sucesso na Autenticação
-        messageArea.className = 'message success';
-        messageArea.textContent = data.message;
-        
-        // Esconde o formulário
-        accessForm.style.display = 'none';
+  if (!response.ok) {
+    throw new Error(data.message || 'Erro ao tentar acessar.');
+  }
 
-        // 3. Busca os dados da rota protegida (/api/protected-data)
-        fetchProtectedData();
+  // Sucesso!
+  messageArea.className = 'message success';
+  messageArea.textContent = data.message;
+  accessForm.style.display = 'none';
+  fetchProtectedData();
 
-      } catch (err) {
-        messageArea.className = 'message error';
-        messageArea.textContent = err.message;
-        btnSubmit.disabled = false;
-      }
-    });
+} catch (err) {
+  messageArea.className = 'message error';
+  messageArea.textContent = err.message;
+  btnSubmit.disabled = false;
+}
 
     // Função para buscar o conteúdo protegido usando o Cookie recebido
     async function fetchProtectedData() {
