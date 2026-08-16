@@ -288,7 +288,7 @@
           showStatus('Carregando aplicativo protegido...', 'info');
 
           // 2. Busca o app protegido validando a sessão
-          const dataRes = await fetch('/api/protected-data', {
+          const response = await fetch('/api/acess', { ... });
             method: 'GET',
             credentials: 'same-origin'
           });
