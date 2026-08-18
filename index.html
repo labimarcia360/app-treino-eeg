@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCLuz EEG — Treino Interativo</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #121729;
+      --gold: #FFD700;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --error: #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #131a2e 0%, var(--bg) 60%);
+      font-family: 'Lato', system-ui, sans-serif;
+      color: var(--text);
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 500px;
+      background: var(--panel);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      border-radius: 999px;
+      padding: 4px 12px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .sub {
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    /* FORMULÁRIO */
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      background: #070a12;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .form-control:focus { border-color: var(--gold); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--gold);
+      color: #0b0f19;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      margin-top: 10px;
+    }
+
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* MENSAGENS DE STATUS */
+    .status-box {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      text-align: center;
+      display: none;
+    }
+
+    .status-box.error {
+      display: block;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+
+    .status-box.info {
+      display: block;
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+    }
+
+    /* CONTAINER DO APLICATIVO / WEBVIEW (OCULTO INICIALMENTE) */
+    #painel-app {
+      display: none;
+    }
+
+    .webview-container {
+      width: 100%;
+      height: 420px;
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .webview-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <!-- CONTAINER 1: FORMULÁRIO DE CADASTRO -->
+    <div id="painel-cadastro">
+      <div class="badge">Demonstração gratuita</div>
+      <h1>MCLuz EEG🧠 - Treino Interativo</h1>
+      <p class="sub">Preencha seus dados para liberar o acesso ao treino.</p>
+
+      <form id="form-acesso">
+        <div class="form-group">
+          <label for="nome">Nome Completo</label>
+          <input type="text" id="nome" class="form-control" placeholder="Seu nome" required minlength="3">
+        </div>
+
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" class="form-control" placeholder="seu@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="telefone">Telefone / WhatsApp</label>
+          <input type="tel" id="telefone" class="form-control" placeholder="51999999999" required minlength="10">
+        </div>
+
+        <button type="submit" id="btn-submit" class="btn-primary">Acessar Treino EEG</button>
+      </form>
+    </div>
+
+    <!-- CAIXA DE MENSAGENS E ERROS -->
+    <div id="status-box" class="status-box"></div>
+
+    <!-- CONTAINER 2: APLICATIVO WEBVIEW -->
+    <div id="painel-app">
+      <div class="badge">Sinal EEG Ativo</div>
+      <h1>Treino EEG Liberado 🧠</h1>
+      <p class="sub">Aplicação pronta para uso:</p>
+
+      <div class="webview-container">
+        <!-- O WebView abre o app via iframe aqui -->
+        <iframe 
+          id="app-webview" 
+          src="about:blank" 
+          title="Treino EEG Interativo">
+        </iframe>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const formAcesso = document.getElementById('form-acesso');
+      const painelCadastro = document.getElementById('painel-cadastro');
+      const painelApp = document.getElementById('painel-app');
+      const statusBox = document.getElementById('status-box');
+      const btnSubmit = document.getElementById('btn-submit');
+      const appWebview = document.getElementById('app-webview');
+
+      function exibirStatus(mensagem, tipo) {
+        statusBox.textContent = mensagem;
+        statusBox.className = `status-box ${tipo}`;
+      }
+
+      function esconderStatus() {
+        statusBox.style.display = 'none';
+      }
+
+      formAcesso.addEventListener('submit', async (event) => {
+        // 1. Evita o recarregamento automático da página
+        event.preventDefault();
+
+        btnSubmit.disabled = true;
+        exibirStatus('Validando dados no servidor...', 'info');
+
+        const payload = {
+          name: document.getElementById('nome').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('telefone').value.trim()
+        };
+
+        try {
+          // 2. Envia os dados para a API
+          const response = await fetch('/api/access', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          // 3. Valida se a resposta é JSON antes de converter (evita erro de JSON.parse)
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Servidor offline ou rota /api/access não encontrada.');
+          }
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Dados inválidos.');
+          }
+
+          // 4. TRANSIÇÃO DE TELA: Oculta cadastro e carrega o aplicativo
+          esconderStatus();
+          painelCadastro.style.display = 'none'; 
+          
+          // Define a rota final do seu app no servidor ou link externo
+          appWebview.src = data.appUrl || '/app-eeg-treino'; 
+          painelApp.style.display = 'block';
+
+        } catch (err) {
+          console.error("Erro na requisição:", err);
+          exibirStatus(err.message, 'error');
+          btnSubmit.disabled = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
