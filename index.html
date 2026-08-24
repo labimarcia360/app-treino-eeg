@@ -233,7 +233,7 @@
 
         try {
           // 2. Envia os dados para a API
-          const response = await fetch('https://app-treino-eeg.vercel.app/', {
+          const response = await fetch('https://vercel.app/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -242,7 +242,7 @@
           // 3. Valida se a resposta é JSON antes de converter (evita erro de JSON.parse)
           const contentType = response.headers.get('content-type');
           if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Servidor offline ou rota https://app-treino-eeg.vercel.app/ não encontrada.');
+            throw new Error('Servidor offline ou rota https://vercel.app/ não encontrada.');
           }
 
           const data = await response.json();
