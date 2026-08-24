@@ -2,11 +2,13 @@ const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors());
 
 // 1. Cabeçalhos de Segurança
 app.use((req, res, next) => {
@@ -84,4 +86,4 @@ app.get('/api/protected-data', requireAuth, (req, res) => {
   });
 });
 
-app.listen(80, () => console.log('Servidor rodando em http://localhost:80'));
+app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
